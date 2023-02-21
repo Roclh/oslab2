@@ -17,6 +17,7 @@
 #include <linux/pci.h>
 #include <linux/sched.h>
 #include <linux/sched/cputime.h>
+#include <linyx/mutex.h>
 
 #include <linux/netdevice.h>
 #include <linux/device.h>
@@ -45,6 +46,8 @@ static int vendor_id = 0;
 static int device_id = 0;
 static int n_pid = 0;
 
+static struct mutex lock;
+
 /* Function prototypes */
 static int      __init kmod_init(void);
 static void     __exit kmod_exit(void);
@@ -71,11 +74,13 @@ static struct file_operations fops =
 };
 
 static int etx_open(struct inode *inode, struct file *file) {
+		mutex_lock(&lock);
         pr_info("kmod-ioctl: Device file opened.\n");
         return 0;
 }
 
 static int etx_release(struct inode *inode, struct file *file) {
+		mutex_unlock(&lock);
         pr_info("kmod-ioctl: Device file closed.\n");
         return 0;
 }
@@ -201,6 +206,7 @@ int fill_structs() {
 
 static int __init kmod_init(void) {
     	printk(KERN_INFO "kmod: module is loading.\n");
+    	mutex_init(&lock);
     
             /*Allocating Major number*/
         if((alloc_chrdev_region(&dev, 0, 1, "etx_Dev")) <0){
