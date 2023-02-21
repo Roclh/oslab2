@@ -17,7 +17,7 @@
 #include <linux/pci.h>
 #include <linux/sched.h>
 #include <linux/sched/cputime.h>
-#include <linyx/mutex.h>
+#include <linux/mutex.h>
 
 #include <linux/netdevice.h>
 #include <linux/device.h>
