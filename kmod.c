@@ -30,9 +30,15 @@ MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("Linux module for lab2");
 MODULE_VERSION("1.0");
 
+
+#define DEVICE_NUMBER 10
 dev_t dev = 0;
 static struct class *dev_class;
 static struct cdev etx_cdev;
+
+static int vendor_id = 0;
+static int device_id = 0;
+static int n_pid = 0;
 
 /* Function prototypes */
 static int      __init kmod_init(void);
@@ -46,7 +52,7 @@ static ssize_t  etx_write(struct file *filp, const char *buf, size_t len, loff_t
 static long     etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
 /* Functions for getting data */
-int fill_structs(int n_pid, int device_id, int vendor_id, struct necessary_struct *my_struct);
+int fill_structs(struct necessary_struct *my_struct);
 
 /* File operation structure */
 static struct file_operations fops =
@@ -82,25 +88,25 @@ static ssize_t etx_write(struct file *filp, const char __user *buf, size_t len, 
 static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
 	char value[64];
 	int res;
-	int n_pid = 0;
-	int device_id = 0;
-	int vendor_id = 0;
-	struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
+struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
 
          switch(cmd) {
               case WR_VALUE:
-                    if( copy_from_user(value, (char*) arg, sizeof(char)*64) ) {
-                        printk(KERN_ALERT "Data Write : Err!\n");
-                    }
-		       		sscanf(value, "%d %d %d", &vendor_id, &device_id, &n_pid);
+                       if( copy_from_user(value, (char*) arg, sizeof(char)*64) ) {
+                              printk(KERN_ALERT "Data Write : Err!\n");
+                       }
+		       sscanf(value, "%d %d %d", &vendor_id, &device_id, &n_pid);
                        printk(KERN_INFO "Read vendor ID = %d device ID = %d PID = %d\n", vendor_id, device_id, n_pid);
-                       res = fill_structs(n_pid, device_id, vendor_id, my_struct);
-                    if( copy_to_user((struct necessary_struct*) arg, my_struct, sizeof(struct necessary_struct)) ) {
-                        printk(KERN_ALERT "Data Read : Err!\n");
-                    }
-					vfree(my_struct);
                        break;
-                case RD_VALUE:	
+                case RD_VALUE:
+                	res = fill_structs(my_struct);
+			//printk(KERN_INFO "Result of filling structures %d", res);
+			//if (res != -1) {
+                        	if( copy_to_user((struct necessary_struct*) arg, my_struct, sizeof(struct necessary_struct)) ) {
+                                	printk(KERN_ALERT "Data Read : Err!\n");
+			//	}
+                        }
+			vfree(my_struct);	
                         break;
                 default:
                         printk(KERN_ALERT "Default\n");
@@ -109,18 +115,17 @@ static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
         return 0;
 }
 
-int fill_structs(int n_pid, int device_id, int vendor_id, struct necessary_struct *my_struct) {
+int fill_structs(struct necessary_struct *my_struct) {
 	u16 dval;
 	char byte;
 	int i = 0;
-	struct pci_dev *device_value;
-	int DEVICE_NUMBER = 10;
+struct pci_dev *device_value = vmalloc(sizeof(struct pci_dev));
 
 	device_value = NULL;
 	struct my_pci_dev *mpd = vmalloc(DEVICE_NUMBER * sizeof(struct my_pci_dev));
 
-	// vendor_id = PCI_ANY_ID;
-	// device_id = PCI_ANY_ID;
+	//vendor_id = PCI_ANY_ID;
+	//device_id = PCI_ANY_ID;
 	while ((device_value = pci_get_device(vendor_id, device_id, device_value)) && i<DEVICE_NUMBER) {
 		printk(KERN_INFO "Device %d:\n", i);
 		strncpy(mpd->name, pci_name(device_value), 13); 
@@ -144,13 +149,12 @@ int fill_structs(int n_pid, int device_id, int vendor_id, struct necessary_struc
 		i++;
 	}
 	my_struct->size = i;
-	printk("Size %d/%d", i, DEVICE_NUMBER);
 
 	if (i == 0) {
 		printk(KERN_INFO "kmod: The pci device with these vendor and device ID didn't found.\n");
 	}
 
-    struct my_task_cputime *cputime = vmalloc(sizeof(struct my_task_cputime));
+        struct my_task_cputime *cputime = vmalloc(sizeof(struct my_task_cputime));
 	struct task_struct *ts = get_pid_task(find_get_pid(n_pid), PIDTYPE_PID);
 	if (ts == NULL) {
 		printk(KERN_INFO "kmod: The process with PID = %d didn't found.\n", n_pid);
