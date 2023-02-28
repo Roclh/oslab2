@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 	sprintf(value, "%d %d %d", f_arg, s_arg, t_arg);
 	
 	struct necessary_struct ns;
-	ns->args = value;
+	ns.args = value;
 	
 	int fd;
         printf("Driver is opening.\n");
