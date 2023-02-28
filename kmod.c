@@ -36,10 +36,6 @@ dev_t dev = 0;
 static struct class *dev_class;
 static struct cdev etx_cdev;
 
-static int vendor_id = 0;
-static int device_id = 0;
-static int n_pid = 0;
-
 /* Function prototypes */
 static int      __init kmod_init(void);
 static void     __exit kmod_exit(void);
@@ -52,7 +48,7 @@ static ssize_t  etx_write(struct file *filp, const char *buf, size_t len, loff_t
 static long     etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
 /* Functions for getting data */
-int fill_structs(struct necessary_struct *my_struct);
+int fill_structs(int vendor_id, int device_id, int n_pid, struct necessary_struct *my_struct);
 
 /* File operation structure */
 static struct file_operations fops =
@@ -66,13 +62,11 @@ static struct file_operations fops =
 };
 
 static int etx_open(struct inode *inode, struct file *file) {
-	mutex_lock(&lock);
         pr_info("kmod-ioctl: Device file opened.\n");
         return 0;
 }
 
 static int etx_release(struct inode *inode, struct file *file) {
-	mutex_unlock(&lock);
         pr_info("kmod-ioctl: Device file closed.\n");
         return 0;
 }
@@ -90,6 +84,9 @@ static ssize_t etx_write(struct file *filp, const char __user *buf, size_t len, 
 static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
 	char value[64];
 	int res;
+	int vendor_id = 0;
+	int device_id = 0;
+	int n_pid = 0;
 struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
 
          switch(cmd) {
@@ -99,16 +96,14 @@ struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
                        }
 		       sscanf(value, "%d %d %d", &vendor_id, &device_id, &n_pid);
                        printk(KERN_INFO "Read vendor ID = %d device ID = %d PID = %d\n", vendor_id, device_id, n_pid);
+                       res = fill_structs(vendor_id, device_id, n_pid, my_struct);
+                    if( copy_to_user((struct necessary_struct*) arg, my_struct, sizeof(struct necessary_struct)) ) {
+                                	printk(KERN_ALERT "Data Read : Err!\n");
+                     }
+			vfree(my_struct);
                        break;
                 case RD_VALUE:
-                	res = fill_structs(my_struct);
-			//printk(KERN_INFO "Result of filling structures %d", res);
-			//if (res != -1) {
-                        	if( copy_to_user((struct necessary_struct*) arg, my_struct, sizeof(struct necessary_struct)) ) {
-                                	printk(KERN_ALERT "Data Read : Err!\n");
-			//	}
-                        }
-			vfree(my_struct);	
+                	
                         break;
                 default:
                         printk(KERN_ALERT "Default\n");
@@ -117,7 +112,7 @@ struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
         return 0;
 }
 
-int fill_structs(struct necessary_struct *my_struct) {
+int fill_structs(int vendor_id, int device_id, int n_pid, struct necessary_struct *my_struct) {
 	u16 dval;
 	char byte;
 	int i = 0;
