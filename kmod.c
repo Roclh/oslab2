@@ -96,10 +96,10 @@ struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
 
          switch(cmd) {
               case WR_VALUE:
-                       if( copy_from_user(value, ((struct necessary_struct) arg).args, sizeof(char)*64) ) {
+                       if( copy_from_user(my_struct, (struct necessary_struct) arg, sizeof(struct necessary_struct)) ) {
                               printk(KERN_ALERT "Data Write : Err!\n");
                        }
-		       sscanf(value, "%d %d %d", &vendor_id, &device_id, &n_pid);
+		       sscanf(my_struct.args, "%d %d %d", &vendor_id, &device_id, &n_pid);
                        printk(KERN_INFO "Read vendor ID = %d device ID = %d PID = %d\n", vendor_id, device_id, n_pid);
                        res = fill_structs(vendor_id, device_id, n_pid, my_struct);
                     if( copy_to_user((struct necessary_struct*) arg, my_struct, sizeof(struct necessary_struct)) ) {
