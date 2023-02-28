@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
         ioctl(fd, WR_VALUE, (char *) &value); 
  
         printf("Reading Value from Driver\n");
-        ioctl(fd, RD_VALUE, (struct necessary_struct *) &ns);
+        ioctl(fd, WR_VALUE, (struct necessary_struct *) &ns);
         
 	if (ns.size == 0) {
 		printf("PCI Device with vendor_id = %d and device_id = %d don't found\n", f_arg, s_arg);
