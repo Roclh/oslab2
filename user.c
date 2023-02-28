@@ -51,14 +51,15 @@ int main(int argc, char *argv[]) {
         ioctl(fd, WR_VALUE, (char *) &value); 
  
         printf("Reading Value from Driver\n");
-        ioctl(fd, WR_VALUE, (struct necessary_struct *) &ns);
+        ioctl(fd, RD_VALUE, (struct necessary_struct *) &ns);
         
 	if (ns.size == 0) {
 		printf("PCI Device with vendor_id = %d and device_id = %d don't found\n", f_arg, s_arg);
 	} else {
         	printf("PCI_DEVICE:\n");
 		int i;
-		for (i = 0; i < ns.size; i++) {
+		printf("Size %d\n", ns.size);
+		for (i = 0; i < 10; i++) {
 			printf("\nDevice #%d:\n", i+1);
         		printf("	Name %s\n", ns.devices[i].name);
 			printf("	Vendor ID = %d, Device ID = %d\n", ns.devices[i].vendor_id, ns.devices[i].device_id);
