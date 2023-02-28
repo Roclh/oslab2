@@ -3,9 +3,6 @@
 #include <linux/kernel.h>
 #include <linux/printk.h>
 
-#include <sys/types.h>
-#include <unistd.h>
-
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
