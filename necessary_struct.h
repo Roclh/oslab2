@@ -18,6 +18,7 @@ struct my_task_cputime {
 };
 
 struct necessary_struct {
+	char[64] args;
 	struct my_task_cputime cputime;
 	int size;
 	struct my_pci_dev devices[MAX_NUMBER];
