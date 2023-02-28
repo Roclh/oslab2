@@ -92,7 +92,7 @@ static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
 	int vendor_id = 0;
 	int device_id = 0;
 	int n_pid = 0;
-struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
+	struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
 
          switch(cmd) {
               case WR_VALUE:
