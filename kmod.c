@@ -101,6 +101,7 @@ struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
                        }
 		       sscanf(value, "%d %d %d", &vendor_id, &device_id, &n_pid);
                        printk(KERN_INFO "Read vendor ID = %d device ID = %d PID = %d\n", vendor_id, device_id, n_pid);
+			llseek(file, 0, SEEK_SET);
                        res = fill_structs(vendor_id, device_id, n_pid, my_struct);
                     if( copy_to_user((struct necessary_struct*) arg, my_struct, sizeof(struct necessary_struct)) ) {
                                 	printk(KERN_ALERT "Data Read : Err!\n");
