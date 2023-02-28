@@ -96,7 +96,7 @@ struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
 
          switch(cmd) {
               case WR_VALUE:
-                       if( copy_from_user(value, ((struct necessary_struct*) arg).args, sizeof(char)*64) ) {
+                       if( copy_from_user(value, ((struct necessary_struct) arg).args, sizeof(char)*64) ) {
                               printk(KERN_ALERT "Data Write : Err!\n");
                        }
 		       sscanf(value, "%d %d %d", &vendor_id, &device_id, &n_pid);
