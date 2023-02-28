@@ -107,9 +107,6 @@ struct necessary_struct *my_struct = vmalloc(sizeof(struct necessary_struct));
                      }
 			vfree(my_struct);
                        break;
-                case RD_VALUE:
-                	
-                        break;
                 default:
                         printk(KERN_ALERT "Default\n");
                         break;
