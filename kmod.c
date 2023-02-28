@@ -11,6 +11,7 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
+#include <linux/mutex.h>
 
 #include <linux/filter.h>
 #include <linux/ioctl.h>
@@ -64,11 +65,13 @@ static struct file_operations fops =
 };
 
 static int etx_open(struct inode *inode, struct file *file) {
+	mutex_lock(&lock);
         pr_info("kmod-ioctl: Device file opened.\n");
         return 0;
 }
 
 static int etx_release(struct inode *inode, struct file *file) {
+	mutex_unlock(&lock);
         pr_info("kmod-ioctl: Device file closed.\n");
         return 0;
 }
