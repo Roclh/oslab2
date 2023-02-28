@@ -36,6 +36,8 @@ dev_t dev = 0;
 static struct class *dev_class;
 static struct cdev etx_cdev;
 
+static struct mutex lock;
+
 /* Function prototypes */
 static int      __init kmod_init(void);
 static void     __exit kmod_exit(void);
@@ -195,6 +197,7 @@ struct pci_dev *device_value = vmalloc(sizeof(struct pci_dev));
 
 static int __init kmod_init(void) {
     	printk(KERN_INFO "kmod: module is loading.\n");
+	mutex_init(&lock);
     
             /*Allocating Major number*/
         if((alloc_chrdev_region(&dev, 0, 1, "etx_Dev")) <0){
